@@ -1,3 +1,5 @@
-layers: 70
-mesh: C12
-fields: 1
+api: ["posix"]
+layers: [70]
+mesh: ["C12"]
+fields: [1,10]
+operation: ["write"]
