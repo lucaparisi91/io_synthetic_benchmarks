@@ -1,0 +1,27 @@
+variables:
+  SLURM_job_name: gitlab-ci
+  SLURM_account: n02-NGARCH
+  SLURM_partition: standard
+  SLURM_qos: short
+
+.setup_environment:  &setup_environment
+  - module load PrgEnv-gnu
+  - module load cray-hdf5-parallel
+  - module load cray-netcdf-hdf5parallel
+
+run_test:
+  stage: test
+
+  variables:
+    ON_COMPUTE: "TRUE"
+    SLURM_time: "00:05:00"
+    SLURM_nodes: 1
+    SLURM_tasks_per_node: 40
+    SLURM_exclusive: "TRUE"
+  
+  parallel:
+    matrix: 
+      - NODES: [1]
+  script:
+    - *setup_environment
+    - module list
