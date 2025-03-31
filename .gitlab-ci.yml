@@ -18,13 +18,13 @@ run_test:
   variables:
     ON_COMPUTE: "TRUE"
     SLURM_time: "00:05:00"
-    SLURM_nodes: 1
+   
     SLURM_tasks_per_node: 40
     SLURM_exclusive: "TRUE"
   
   parallel:
     matrix: 
-      - NODES: [1]
+      - SLURM_nodes: [1,2]
   script:
     - *setup_environment
     - module list
