@@ -3,6 +3,7 @@ variables:
   SLURM_account: n02-NGARCH
   SLURM_partition: standard
   SLURM_qos: short
+  CI_COMMIT_TAG: io
 
 .setup_environment:  &setup_environment
   - module load PrgEnv-gnu
@@ -11,6 +12,7 @@ variables:
 
 run_test:
   stage: test
+  tags: io_archer2
 
   variables:
     ON_COMPUTE: "TRUE"
