@@ -12,7 +12,8 @@ variables:
 
 run_test:
   stage: test
-  tags: io_archer2
+  tags: 
+    - io_archer2
 
   variables:
     ON_COMPUTE: "TRUE"
