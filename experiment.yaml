@@ -1,5 +1,10 @@
-api: ["posix"]
-layers: [70]
-mesh: ["C12"]
-fields: [1,10]
-operation: ["write"]
+{
+  api: ["posix"],
+  layers: [ 70 ],
+  mesh: ["C12","C48"],
+  fields: [1,10],
+  operation: ["write"],
+  stripes: [1],
+  nodes: [1],
+  directories: ["/work/n02/n02/lparisin02/wp2/synthetic_io_benchmarks"]
+}
