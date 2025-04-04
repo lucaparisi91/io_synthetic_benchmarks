@@ -17,29 +17,10 @@ benchmark_template = {
     "operation": "write"
 }
 
-def create_data_directory(data,stripes):
-    """
-    Create the data inside a directory
-    """
-
-def experiment_dirname(config):
-    """
-    Get an unique directory name for the experiment
-    """
-
-
-def generate_slurm_script(config,nodes=1,tasks_per_node=1):
-    """
-
-    """
-
-def run_slurm_script( script_name ):
-    """
-    """
-
 
 def generate_configs(experiment_config):
-    benchmarks=[]
+
+    experiments=[]
     for layer in data["layers"]:
         for fied in data["fields"]:
             for mesh in data["mesh"]:
@@ -56,24 +37,46 @@ def generate_configs(experiment_config):
                             current_benchmark["operation"]=str(operation)
                             current_benchmark["fields"]=int(fields)
                             current_benchmark["API"]=api
+                            
                             for directory in data["directories"]:
                                 data_dir=Path(os.path.join(directory,folder_prefix))
                                 data_dir.mkdir(parents=True, exist_ok=True)
-                                print(data_dir)
-
+                                
                                 for stripes in data["stripes"]:
                                     striped_dir=(data_dir / f"stripes={stripes}")
-                                    striped_dir.mkdir(parents=True, exist_ok=True)
+
                                     current_benchmark["paths"]=[str(striped_dir)]
 
-                                    benchmarks.append(current_benchmark)
                                     config_folder=Path(os.path.join(os.getcwd(),"experiments",folder_prefix))
-                                    config_folder.mkdir(parents=True, exist_ok=True)
-                                    with open(config_folder/ "config.yaml","w+") as f :
-                                        dump( {"benchmarks":[current_benchmark]}, f, Dumper=Dumper)
-                                        
+                                    config={"benchmarks":[current_benchmark] }
+                                    slurm_resources={"nodes": 1 }
+                                    storage_resources={"stripes":1,"work_dir":config_folder}
+
+                                    experiments.append({"config":config,"storage_resources":storage_resources,"slurm_resources":slurm_resources})
+    return experiments
+
+
+def setup_experiment( experiment: dict) -> None :
+
+    config=experiment["config"]
+    storage_resources=experiment["storage_resources"]
+    work_dir=storage_resources["work_dir"]
+
+    work_dir.mkdir(parents=True, exist_ok=True)
+    with open( work_dir/ "config.yaml","w+") as f :
+                                        dump( config , f, Dumper=Dumper)
+    
+    for benchmark in  config["benchmarks"]:
+        for data_dir_name in benchmark["paths"]:
+            Path(data_dir_name).mkdir(parents=True, exist_ok=True)
+
+    return experiment    
+
 
 with open("experiment.yaml") as f:
     data = load(f, Loader=Loader)
 
-generate_configs(data)
+experiments=generate_configs(data)
+
+for experiment in experiments:
+    setup_experiment(experiment)
