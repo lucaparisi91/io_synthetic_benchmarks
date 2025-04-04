@@ -18,15 +18,15 @@ benchmark_template = {
 }
 
 
-def generate_configs(experiment_config):
-
+def generate_configs(experiment_config: dict):
+    
     experiments=[]
-    for layer in data["layers"]:
-        for fied in data["fields"]:
-            for mesh in data["mesh"]:
-                for fields in data["fields"]:
-                    for operation in data["operation"]:
-                        for api in data["api"]:
+    for layer in experiment_config["layers"]:
+        for fied in experiment_config["fields"]:
+            for mesh in experiment_config["mesh"]:
+                for fields in experiment_config["fields"]:
+                    for operation in experiment_config["operation"]:
+                        for api in experiment_config["api"]:
                             folder_prefix=f"layer={layer}/fields={fields}/mesh={mesh}"
 
                             m=re.match(r"C([0-9]+)",mesh)
@@ -37,22 +37,23 @@ def generate_configs(experiment_config):
                             current_benchmark["operation"]=str(operation)
                             current_benchmark["fields"]=int(fields)
                             current_benchmark["API"]=api
-                            
-                            for directory in data["directories"]:
+
+                            for directory in experiment_config["directories"]:
                                 data_dir=Path(os.path.join(directory,folder_prefix))
                                 data_dir.mkdir(parents=True, exist_ok=True)
                                 
-                                for stripes in data["stripes"]:
-                                    striped_dir=(data_dir / f"stripes={stripes}")
+                                for stripes in experiment_config["stripes"]:
+                                    for nodes in experiment_config["nodes"]:
+                                        for ntasks_per_node in experiment_config["ntasks-per-node"]:
+                                            slurm_resources={"nodes": nodes }
+                                            slurm_resources["ntasks-per-node"]=ntasks_per_node
+                                            config_folder=Path(os.path.join(os.getcwd(),"experiments",folder_prefix))
+                                            config={"benchmarks":[current_benchmark] }
+                                            storage_resources={"stripes":1,"work_dir":config_folder}
+                                            striped_dir=(data_dir / f"stripes={stripes}" / f"nodes={nodes}")
+                                            current_benchmark["paths"]=[str(striped_dir) ]
 
-                                    current_benchmark["paths"]=[str(striped_dir)]
-
-                                    config_folder=Path(os.path.join(os.getcwd(),"experiments",folder_prefix))
-                                    config={"benchmarks":[current_benchmark] }
-                                    slurm_resources={"nodes": 1 }
-                                    storage_resources={"stripes":1,"work_dir":config_folder}
-
-                                    experiments.append({"config":config,"storage_resources":storage_resources,"slurm_resources":slurm_resources})
+                                        experiments.append({"config":config,"storage_resources":storage_resources,"slurm_resources":slurm_resources})
     return experiments
 
 
@@ -70,13 +71,4 @@ def setup_experiment( experiment: dict) -> None :
         for data_dir_name in benchmark["paths"]:
             Path(data_dir_name).mkdir(parents=True, exist_ok=True)
 
-    return experiment    
-
-
-with open("experiment.yaml") as f:
-    data = load(f, Loader=Loader)
-
-experiments=generate_configs(data)
-
-for experiment in experiments:
-    setup_experiment(experiment)
+    return experiment

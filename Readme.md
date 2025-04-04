@@ -5,5 +5,12 @@ You can generate a config to benchmark with cbenchio using
 
 ```bash
 source env.sh
-python generate_config.py
+python submit_experiments.py
 ```
+
+You will need cbenchio as well 
+
+```bash
+git clone git@gitlab:lparisi/cbenchio.git
+```
+
